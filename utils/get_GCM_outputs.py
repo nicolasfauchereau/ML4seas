@@ -67,7 +67,7 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
     # now get the dimensions, will be returned along with the dataset itself, 
     # regarding of whether the dataset is flattened 
     
-    dims = dset.dims
+    dims_tuple = (dset.dims, dset[var_name.lower()].dims) 
 
     if flatten: 
         
@@ -79,4 +79,4 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
             
             dset = dset.stack(z=('lat','lon'))    
     
-    return dset, dims
+    return dset, dims_tuple
