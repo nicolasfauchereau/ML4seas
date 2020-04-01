@@ -1,4 +1,4 @@
-def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcasts', rpath=None, domain=[90, 300, -65, 50], step=None, verbose=False, flatten=True):
+def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcasts', rpath=None, domain=[90, 300, -65, 50], step=None, verbose=False, flatten=True, nmembers=None):
     
     """
     Get the GCM outputs 
@@ -47,7 +47,9 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
     for fname in lfiles_gcm: 
         
         dset = xr.open_dataset(fname)[[var_name.lower()]]
-
+        
+        if 'surface' in dset.dims: 
+            dset = dset.drop('surface')
         
         # select the domain 
         
@@ -62,13 +64,19 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
     
         dset_l.append(dset)
 
-    dset = xr.concat(dset_l, dim='time')
+    dset = xr.concat(dset_l, dim='time', coords='minimal', compat='override')
     
-    # now get the dimensions, will be returned along with the dataset itself, 
+    # now get the coordinates, will be returned along with the dataset itself, 
     # regarding of whether the dataset is flattened 
     
-    dims_tuple = (dset.dims, dset[var_name.lower()].dims) 
+    #dims_tuple = (dset.dims, dset[var_name.lower()].dims) 
+    
+    if nmembers is not None: 
+        
+        dset = dset.isel(member=slice(0, nmembers))
 
+    coords = dset.coords
+    
     if flatten: 
         
         if 'member' in dset.dims: 
@@ -79,4 +87,4 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
             
             dset = dset.stack(z=('lat','lon'))    
     
-    return dset, dims_tuple
+    return dset, coords
