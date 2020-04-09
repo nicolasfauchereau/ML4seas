@@ -29,18 +29,26 @@ def make_hindcasts_grid_def(provider='CDS', GCM='ECMWF', var_name='T2M', rpath='
     
     import pathlib 
     import xarray as xr
-    from ..utils import set_root_dir
+
+    if rpath == 'local': 
+        root_dir = pathlib.Path.home() / 'research' / 'Smart_Ideas' / 'data'
+    elif rpath == 'gdata': 
+        root_dir = pathlib.Path('/media/nicolasf/GDATA/END19101/Working/data/')
+    elif rpath == 'network': 
+        root_dir = pathlib.Path.home() / 'drives' / 'auck_projects' / 'END19101' / 'Working' / 'data'
+
     if var_name is None:
         var_name = 'T2M'
-        dpath = pathlib.Path(set_root_dir(root=rpath) / 'GCMs' / 'processed' / 'hindcasts' / provider / GCM / var_name)
     if year is None: 
         year = 2016
     if month is None: 
         month = 12
+
+    dpath = pathlib.Path(root_dir / 'GCMs' / 'processed' / 'hindcasts' / provider / GCM / var_name)
     
     dset = xr.open_dataset(dpath / f"{GCM}_{var_name}_monthly_anomalies_{year}_{month}.nc")
     
-    if member in dset.dims: 
+    if 'member' in dset.dims: 
         n_members = dset.dims['member']
 
     grid = dset[['lat','lon']]
@@ -51,5 +59,7 @@ def make_hindcasts_grid_def(provider='CDS', GCM='ECMWF', var_name='T2M', rpath='
         grid = grid.drop('month')
         
     grid.attrs['n_members'] = n_members 
+    grid.attrs['provider'] = provider
+    grid.attrs['GCM'] = GCM
     
     return grid 
