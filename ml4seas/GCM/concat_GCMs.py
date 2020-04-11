@@ -42,7 +42,9 @@ def concat_GCMs(provider, GCMs, var_name='T2M', period='hindcasts', rpath=None, 
     GCM_records = []
     X_index_l = []
     X_data_l = []
-    X_data_l_std = []
+    
+    if standardize:
+        X_data_l_std = []
 
     domain_def = {}
     domain_def['local'] = [150, 200, -50, -10]
@@ -61,7 +63,7 @@ def concat_GCMs(provider, GCMs, var_name='T2M', period='hindcasts', rpath=None, 
     
     for GCM in GCMs: 
     
-        print(f"getting {GCM}")
+        print(f"\n-----------------   getting {GCM}")
     
         dset, coords = get_GCM_outputs(provider=provider, GCM=GCM, var_name=var_name, period=period, rpath=rpath, domain=domain_def[domain], step=step, flatten=flatten, ensmean=ensmean)
         
@@ -70,7 +72,7 @@ def concat_GCMs(provider, GCMs, var_name='T2M', period='hindcasts', rpath=None, 
             
         dset = shift_dset_time(dset, step=step)
         
-        X_data = dset['t2m'].data
+        X_data = dset[var_name.lower()].data
         
         X_index = dset['time'].to_index().to_pydatetime()
         
