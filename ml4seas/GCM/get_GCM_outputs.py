@@ -31,9 +31,13 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
     import pathlib
     import xarray as xr
 
-    ipath = rpath /  'GCMs'/ 'processed' / period / provider / GCM / var_name
+    ipath = rpath / 'GCMs' / 'processed' / period / provider / GCM / var_name
+
+    print(ipath)
 
     lfiles_gcm = list(ipath.glob(f"{GCM}_{var_name}_seasonal_anomalies_interp_????_??.nc"))
+
+    print(len(lfiles_gcm))
 
     if (period == 'hindcasts') and (len(lfiles_gcm) ) < 200:
         print(f"Something wrong with the number of files in the list for the {period} period, the length is {len(lfiles_gcm)}")
