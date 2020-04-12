@@ -1,12 +1,11 @@
-def concat_GCMs(provider, GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ext_regional', standardize=True, flatten=True, ensmean=True, step=3): 
+def concat_GCMs(GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ext_regional', standardize=True, flatten=True, ensmean=True, step=3): 
     """
     Returns many GCM outputs concatenated along the time dimension
     
     Parameters
     ----------
     
-    - provider : str, the provider in ['CDS','IRI','JMA'], no default 
-    - GCMs : list, a list of GCMs in the provider 
+    - GCMs : list, a list of GCMs
     - period : the period to extract, in ['hindcasts','forecasts']
     - rpath : str or pathlib.Path, the path to the 'data' folder 
     - domain : the domain, in ['local','regional','ext_regional', 'global', 'tropics']
@@ -31,6 +30,7 @@ def concat_GCMs(provider, GCMs, var_name='T2M', period='hindcasts', rpath=None, 
     import pathlib
     import itertools
     import numpy as np
+    from sklearn.preprocessing import StandardScaler
     
     HOME = pathlib.Path.home()
     
@@ -50,7 +50,6 @@ def concat_GCMs(provider, GCMs, var_name='T2M', period='hindcasts', rpath=None, 
     domain_def['local'] = [150, 200, -50, -10]
     domain_def['regional'] = [90, 300, -65, 50]
     domain_def['ext_regional'] = [70, 300, -70, 60]
-    # domain_def['ext_regional'] = [50, 300, -75, 60]
     domain_def['global'] = [0, 360, -70, 70]
     domain_def['tropics'] = [0, 360, -40, 40]    
 
@@ -61,11 +60,24 @@ def concat_GCMs(provider, GCMs, var_name='T2M', period='hindcasts', rpath=None, 
     if isinstance(rpath, str): 
         rpath = pathlib.Path(rpath)
     
+    GCM_provider = {}
+    GCM_provider['ECMWF'] = 'CDS'
+    GCM_provider['UKMO'] = 'CDS'
+    GCM_provider['METEO_FRANCE'] = 'CDS'
+    GCM_provider['DWD'] = 'CDS'
+    GCM_provider['CMCC'] = 'CDS'
+    
+    GCM_provider['NCEP_CFSv2'] = 'IRI'
+    GCM_provider['CanCM4i'] = 'IRI'
+    GCM_provider['GEM_NEMO'] = 'IRI'
+    GCM_provider['NASA_GEOSS2S'] = 'IRI'
+    GCM_provider['CanSIPSv2'] = 'IRI'
+    
     for GCM in GCMs: 
     
         print(f"\n-----------------   getting {GCM}")
     
-        dset, coords = get_GCM_outputs(provider=provider, GCM=GCM, var_name=var_name, period=period, rpath=rpath, domain=domain_def[domain], step=step, flatten=flatten, ensmean=ensmean)
+        dset, coords = get_GCM_outputs(provider=GCM_provider[GCM], GCM=GCM, var_name=var_name, period=period, rpath=rpath, domain=domain_def[domain], step=step, flatten=flatten, ensmean=ensmean)
         
         if 'valid_time' in dset.coords: 
             dset = dset.drop('valid_time')        
