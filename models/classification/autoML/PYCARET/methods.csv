@@ -1,0 +1,22 @@
+"Method","Abbr"
+"K Neighbors Classifier","knn"
+"CatBoost Classifier","catboost"
+"Light Gradient Boosting Machine","lightgbm"
+"Extra Trees Classifier","et"
+"Quadratic Discriminant Analysis","qda"
+"Gradient Boosting Classifier","gbc"
+"Extreme Gradient Boosting","xgboost"
+"Random Forest Classifier","rf"
+"Ridge Classifier","ridge"
+"Logistic Regression","lr"
+"Linear Discriminant Analysis","lda"
+"Ada Boost Classifier","ada"
+"Naive Bayes","nb"
+"Decision Tree Classifier","dt"
+"SVM - Linear Kernel","svm"
+"SVM - Radial Kernel","rbfsvm"
+"MLP Classifier","mlp"
+"Gaussian Process Classifier","gpc"
+
+
+
