@@ -30,9 +30,9 @@ def calc_accuracy_sco(df, tolerance=True):
     acc = []
     for i in range(len(df)):
         if tolerance: 
-            r = (int(df.iloc[i,0]) == df.iloc[i,1:].argmax()) or ((df.iloc[i, df.iloc[i,1:].argmax()] - df.iloc[i,int(df.iloc[i,0])]) <= 5.)
+            r = (int(df.iloc[i,0]) == df.iloc[i,1:].idxmax()) or ((df.iloc[i, df.iloc[i,1:].idxmax()] - df.iloc[i,int(df.iloc[i,0])]) <= 5.)
         else: 
-            r = (int(df.iloc[i,0]) == df.iloc[i,1:].argmax())
+            r = (int(df.iloc[i,0]) == df.iloc[i,1:].idxmax())
         acc.append(r)
     acc = np.array(acc)
     return acc.sum() / len(acc)
