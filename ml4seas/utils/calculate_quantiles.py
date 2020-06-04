@@ -1,4 +1,4 @@
-def calculate_quantile(ts_series, quant_values): 
+def calculate_quantiles(ts_series, quant_values): 
     
     """
     given one Pandas Series containing seasonally aggregated values (Note: NOT a dataframe) 
