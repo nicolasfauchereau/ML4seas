@@ -1,4 +1,4 @@
-def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', replace_step=True, drop_orig=True): 
+def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', replace_step=True, drop_orig=True, clip=True): 
     """
     Converts rainfall that is in m.s**-1 (m/s) to mm in the CDS forecasts 
     
@@ -46,6 +46,10 @@ def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', repl
         dset['ndays'] = (('step'), [pd.to_datetime(x).day for x in dset['forecast_horizon'].data])      
         
         dset[varout] = dset[varout] * dset['ndays']
+
+        # clip 
+        if clip: 
+            dset[varout] = dset[varout].clip(min=0.0)
         
         if replace_step: 
             dset['step'] = (('step'), list(range(1, len(dset['step'].data) + 1)))
