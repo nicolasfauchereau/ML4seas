@@ -1,4 +1,4 @@
-def convert_rainfall(dset, varin='tprate', varout='rain', out_units='mm', replace_step=True, drop_orig=True): 
+def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', replace_step=True, drop_orig=True): 
     """
     Converts rainfall that is in m.s**-1 (m/s) to mm in the CDS forecasts 
     
@@ -9,7 +9,7 @@ def convert_rainfall(dset, varin='tprate', varout='rain', out_units='mm', replac
     varin : str, the name of the original variable ('tprate' is default)
     varout : str, the name of the variable after conversion ('rain' is default)
     out_units : str, the units after conversion, will be added to the attrs dict 
-                of `varout` 
+                of `varout`, mm is default
     replace_step: Boolean, whether to replace the `step` variable by a integer list
                   default is True 
     drop_orig : Boolearn, whether to drop the original variable (`varin`)
@@ -21,6 +21,9 @@ def convert_rainfall(dset, varin='tprate', varout='rain', out_units='mm', replac
     dset : the converted xarray.Dataset 
     
     """
+
+    # imports
+    import pandas as pd
     
     # check that the rainfall is indeed in m.s-1
     in_units = dset[varin].attrs['units']
