@@ -72,6 +72,10 @@ def concat_GCMs(GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ex
     GCM_provider['GEM_NEMO'] = 'IRI'
     GCM_provider['NASA_GEOSS2S'] = 'IRI'
     GCM_provider['CanSIPSv2'] = 'IRI'
+
+    GCM_provider['JMA'] = 'JMA'
+
+    GCM_coords = {}
     
     for GCM in GCMs: 
     
@@ -81,13 +85,18 @@ def concat_GCMs(GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ex
         
         if 'valid_time' in dset.coords: 
             dset = dset.drop('valid_time')        
+
+        GCM_coords[GCM] = coords
             
+	# shift the time here, so that the time dimension corresponds to the 
+	# forecast valid time ...
         dset = shift_dset_time(dset, step=step)
         
         X_data = dset[var_name.lower()].data
         
         X_index = dset['time'].to_index().to_pydatetime()
         
+	# Standardize: mean = 0, std = 1 FOR EACH GCM independantly 
         if standardize: 
         
             scaler = StandardScaler() 
@@ -120,8 +129,8 @@ def concat_GCMs(GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ex
     
         X_data_l_std = np.array(list(itertools.chain(*X_data_l_std)))
 
-        return X_data_l, X_data_l_std, X_index_l, GCM_records, scalers_dict
+        return X_data_l, X_data_l_std, X_index_l, GCM_records, GCM_coords, scalers_dict
     
     else: 
         
-        return X_data_l, X_index_l, GCM_records
+        return X_data_l, X_index_l, GCM_records, GCM_coords
