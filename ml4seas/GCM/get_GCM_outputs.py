@@ -1,7 +1,9 @@
 def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcasts', rpath=None, domain=[90, 300, -65, 50], step=None, verbose=False, flatten=True, nmembers=None, ensmean=False):
 
     """
-    Get the GCM outputs
+    Get the GCM outputs for one GCM and one variable 
+
+    added a test to see if the len of the time index is consistent ... 
 
     Parameters
     ----------
@@ -29,13 +31,18 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
 
 
     import pathlib
+    import numpy as np
+    import pandas as pd
     import xarray as xr
 
     ipath = rpath / 'GCMs' / 'processed' / period / provider / GCM / var_name
 
     print(f"reading files from {str(ipath)}")
 
-    lfiles_gcm = list(ipath.glob(f"{GCM}_{var_name}_seasonal_anomalies_interp_????_??.nc"))
+    if GCM  == 'JMA': 
+        lfiles_gcm = list(ipath.glob(f"{GCM}_{var_name}_seasonal_anomalies_????_??.nc"))
+    else: 
+        lfiles_gcm = list(ipath.glob(f"{GCM}_{var_name}_seasonal_anomalies_interp_????_??.nc"))
 
     print(f"number of files in the archive: {len(lfiles_gcm)}")
 
@@ -67,15 +74,14 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
 
         if domain is not None:
             dset = dset.sel(lon=slice(domain[0], domain[1]), lat=slice(domain[2], domain[3]))
-        if step is not None:
+        if (step is not None) and ('step' in dset.coords):
             dset = dset.sel(step=step)
 
-        if nmembers is not None:
+        if (nmembers is not None) and ('members' in dset.coords):
             dset = dset.isel(member=slice(0, nmembers))
 
-
         # calculate the ensemble mean if `ensmean` is defined
-        if ensmean:
+        if (ensmean) and ('member' in dset.coords):
             dset = dset.mean('member')
 
         if verbose:
@@ -85,12 +91,26 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
 
     dset = xr.concat(dset_l, dim='time', coords='minimal', compat='override')
 
+    # check whether the time dimension is consistent with a monotonic time index 
+
+    tindex = dset.time.to_index()
+
+    tmonotonic = pd.date_range(tindex[0], tindex[-1], freq='MS') 
+
+    if not (len(tmonotonic) == len(tindex)): 
+        
+        print(f"\nWARNING: the length of the time index is {len(tindex)}, expected {len(tmonotonic)}\n")
+
+        for y in np.unique(tindex.year):
+
+            m_missing = list(set(list(range(1, 13))) - set(tindex[tindex.year == y].month.tolist())) 
+            m_missing = ", ".join(map(str, m_missing))
+            print(f"months missing for year {y}: {m_missing}")
+
     # now get the coordinates, will be returned along with the dataset itself,
     # regarding of whether the dataset is flattened
 
     #dims_tuple = (dset.dims, dset[var_name.lower()].dims
-
-    coords = dset.coords
 
     if flatten:
 
@@ -101,5 +121,7 @@ def get_GCM_outputs(provider='CDS', GCM='ECMWF', var_name='T2M', period='hindcas
         else:
 
             dset = dset.stack(z=('lat','lon'))
+
+    coords = dset.coords
 
     return dset, coords

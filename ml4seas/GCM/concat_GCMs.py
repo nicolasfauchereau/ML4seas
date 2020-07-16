@@ -78,10 +78,16 @@ def concat_GCMs(GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ex
     GCM_coords = {}
     
     for GCM in GCMs: 
+
+        # allow rpath to be a dictionnary of paths
+        # one for each GCM independantly ... 
+        
+        if isinstance(rpath, dict): 
+            dpath = rpath[GCM]
     
         print(f"\n-----------------   getting {GCM}")
     
-        dset, coords = get_GCM_outputs(provider=GCM_provider[GCM], GCM=GCM, var_name=var_name, period=period, rpath=rpath, domain=domain_def[domain], step=step, flatten=flatten, ensmean=ensmean)
+        dset, coords = get_GCM_outputs(provider=GCM_provider[GCM], GCM=GCM, var_name=var_name, period=period, rpath=dpath, domain=domain_def[domain], step=step, flatten=flatten, ensmean=ensmean)
         
         if 'valid_time' in dset.coords: 
             dset = dset.drop('valid_time')        
