@@ -57,8 +57,13 @@ def concat_GCMs(GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ex
         
         scalers_dict = {}
     
-    if isinstance(rpath, str): 
-        rpath = pathlib.Path(rpath)
+    # check the type of the variable `rpath`, and set `dpath` accordingly
+    if isinstance(rpath, pathlib.PosixPath): 
+        dpath = rpath 
+    elif isinstance(rpath, str): 
+        dpath = pathlib.Path(rpath)
+    else: 
+        pass
     
     GCM_provider = {}
     GCM_provider['ECMWF'] = 'CDS'
@@ -83,7 +88,7 @@ def concat_GCMs(GCMs, var_name='T2M', period='hindcasts', rpath=None, domain='ex
         # one for each GCM independantly ... 
         
         if isinstance(rpath, dict): 
-            dpath = rpath[GCM]
+            dpath = set_root_dir(rpath[GCM])
     
         print(f"\n-----------------   getting {GCM}")
     
