@@ -10,7 +10,9 @@ from datetime import datetime
 import multiprocessing
 from multiprocessing.pool import Pool
 
-print("Number of cpu : ", multiprocessing.cpu_count())
+ncpus = multiprocessing.cpu_count()
+
+print("Number of cpus on this machine : ", ncpus)
 
 today = datetime.utcnow() 
 
@@ -55,7 +57,7 @@ args = parser.parse_args()
 
 ### parse the arguments 
 gcms = args.gcm 
-varname = args.varname 
+varnames = args.varname 
 year = args.year 
 month = args.month
 datastream = args.datastream
@@ -74,10 +76,10 @@ elif "," in gcms:
 if not(isinstance(gcms, list)): gcms = [gcms]
 
 # variable name(s)
-if "," in varname: 
-    varname = varname.replace(" ","").split(",")
+if "," in varnames: 
+    varnames = varnames.replace(" ","").split(",")
 
-if not(isinstance(varname, list)): varname = [varname]
+if not(isinstance(varnames, list)): varnames = [varnames]
 
 # year or list of years 
 if year == 'All' and datastream == 'hindcasts': 
@@ -96,8 +98,6 @@ elif ',' in month:
     month = list(map(int, month.replace(' ','').split(',')))
 else: 
     month = [month]
-
-print(month)
 
 # Domain, casts into a tuple then unpack, and reorder 
 domain = tuple(map(float, domain.replace(" ","").split(",")))
@@ -130,12 +130,10 @@ def fetch_CDS(args):
     GCM = args[0]
     year = args[1]
     month = args[2]
-    varname = args[3][0]
+    varname = args[3]
     domain = args[4]
     opath = args[5]
     
-    print(GCM)
-
     opath_gcm = opath / GCM / varname 
     
     if not opath_gcm.exists(): 
@@ -207,16 +205,17 @@ def fetch_CDS(args):
 
 ## loop over the years and months 
 
-print(gcms)
-
 for y in year:
     for m in month: 
         # constructs the list of arguments for the function `fetch_CDS`
-        args = [(gcm, y, m, varname, domain, opath) for gcm in gcms]
+        args = [(gcm, y, m, varname, domain, opath) for gcm in gcms for varname in varnames]
 
-        print(args)
-
-        # initialise the pool of workers
-        p = Pool(len(args))
-        # send the function to the workers 
-        p.map(fetch_CDS, args) 
+        if len(args) > ncpus: 
+            print("Warning: the number of threads exceeds the physical limit on this machine") 
+            print(f"N CPUs = {ncpus}, attempting to spin {len(args)} workers") 
+            pass
+        else: 
+            # initialise the pool of workers
+            p = Pool(len(args))
+            # send the function to the workers 
+            p.map(fetch_CDS, args) 
