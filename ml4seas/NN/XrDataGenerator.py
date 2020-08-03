@@ -1,6 +1,7 @@
 import numpy as np
+from tensorflow.python.keras.backend import clear_session
 import xarray as xr
-import keras 
+from tensorflow import keras 
 import tensorflow as tf 
 
 class XrDataGenerator(keras.utils.Sequence):
@@ -37,8 +38,7 @@ class XrDataGenerator(keras.utils.Sequence):
 
         self.Xds = Xds
         self.Yds = Yds 
-        self.var_dict = var_dict
-        self.lead_time = lead_time
+        self.X_var_dict = X_var_dict
         self.norm = norm
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -57,13 +57,13 @@ class XrDataGenerator(keras.utils.Sequence):
         if not 'level' in Yds.dims: 
             Ydata = Yds[Y_var].expand_dims({'level': generic_level}, 1)
         
-        self.Ydata = Ydata.transpose('time', 'lat', 'lon', 'level')
+        self.Ydata = Ydata.transpose('instance', 'lat', 'lon', 'level')
 
-        self.Xdata = xr.concat(Xdata, 'level').transpose('time', 'lat', 'lon', 'level')
+        self.Xdata = xr.concat(Xdata, 'level').transpose('instance', 'lat', 'lon', 'level')
         
         # calculates the mean and std (field mean and std)
-        self.mean = self.Xdata.mean(('time', 'lat', 'lon')).compute() if mean is None else mean
-        self.std = self.Xdata.std('time').mean(('lat', 'lon')).compute() if std is None else std
+        self.mean = self.Xdata.mean(('instance','lat', 'lon')).compute() if mean is None else mean
+        self.std = self.Xdata.std(('instance','lat', 'lon')).compute() if std is None else std
         # Normalize
         self.Xdata = (self.Xdata - self.mean) / self.std
         self.n_samples = self.Xdata.shape[0]
@@ -83,8 +83,8 @@ class XrDataGenerator(keras.utils.Sequence):
     def __getitem__(self, i):
         'Generate one batch of data'
         idxs = self.idxs[i * self.batch_size:(i + 1) * self.batch_size]
-        X = self.Xdata.isel(time=idxs).values
-        y = self.Ydata.isel(time=idxs).values
+        X = self.Xdata.isel(instance=idxs).values
+        y = self.Ydata.isel(instance=idxs).values
         return X, y
 
     def on_epoch_end(self):
