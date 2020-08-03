@@ -14,7 +14,7 @@ class XrDataGenerator(keras.utils.Sequence):
         Xds : The xarray Dataset with the Feature maps (predictors)
             if several variables and / or levels, they will be concatenated  
             along a 'level' dimension and transposed to have the 'level' as 
-            the last dimension (will correspond to the channel)
+            the last dimension (will correspond to the 'channel' if multiple variables / levels)
         Yds : xarray dataset
             The Xarray Dataset with the target variable (instance, lat, lon)
         X_var_dict : dict
