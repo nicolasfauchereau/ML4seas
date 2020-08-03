@@ -16,7 +16,7 @@ class XrDataGenerator(keras.utils.Sequence):
             along a 'level' dimension and transposed to have the 'level' as 
             the last dimension (will correspond to the channel)
         Yds : xarray dataset
-            The Xarray Dataset with the target variable (time, lat, lon)
+            The Xarray Dataset with the target variable (instance, lat, lon)
         X_var_dict : dict
             Dictionary of the form {'var': level} for building the inputs. 
             Use None for level if data is of single level
@@ -46,6 +46,7 @@ class XrDataGenerator(keras.utils.Sequence):
         # build X data 
         Xdata = []
         generic_level = xr.DataArray([1], coords={'level': [1]}, dims=['level'])
+        
         for var, levels in X_var_dict.items():
             try:
                 Xdata.append(Xds[var].sel(level=levels))
