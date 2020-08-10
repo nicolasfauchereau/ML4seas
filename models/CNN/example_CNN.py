@@ -27,11 +27,8 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 import tensorflow.keras.backend as K
 
-
 # import NN utilities 
 from NN import *
-
-CWD = pathlib.Path.cwd()
 
 # checks if the GPU is available 
 if len(tf.config.list_physical_devices('GPU')) >= 1: 
@@ -83,9 +80,6 @@ dset_val = dset_val.transpose('instance','lat','lon')
 ### Generate data for tensorflow 
 data_train = XrDataGenerator(dset_train, dset_train, {'t2m':None}, 't2m', norm=True, batch_size=batch_size, mean=None, std=None, shuffle=True, load=False)
 data_val = XrDataGenerator(dset_val, dset_val, {'t2m':None}, 't2m', norm=True, batch_size=batch_size, mean=data_train.mean, std=data_train.std, shuffle=True, load=False)
-
-
-# ### checks the shape (should be (batch_size, (input_shape), channels)) 
 
 # ### build the model 
 
