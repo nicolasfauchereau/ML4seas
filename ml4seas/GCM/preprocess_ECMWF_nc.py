@@ -19,6 +19,6 @@ def preprocess_ECMWF_nc(dset):
     if (dset.lat.data[0] > dset.lat.data[-1]): 
         dset = dset.sortby('lat')
     # if more than 25 members, only select 25 members 
-    if len(dset.members.data) > 25:
-        dset = dset.isel(members=slice(0, 25))
+    if len(dset.member.data) > 25:
+        dset = dset.isel(member=slice(0, 25))
     return dset
