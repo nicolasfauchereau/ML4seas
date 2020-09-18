@@ -3,6 +3,9 @@ def preprocess_ECMWF_nc(dset):
     small utility function to pre-process 
     the ECMWf netcdf files (1981 - 2019)
     """
+
+    import numpy as np 
+
     # 1: set the initial time 
     dset = dset.expand_dims('init_time')
     dset['init_time'] = (('init_time'), [dset.time.data[0]])

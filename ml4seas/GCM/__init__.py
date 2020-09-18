@@ -8,3 +8,4 @@ from .concat_GCMs import concat_GCMs
 from .prepare_data_CSV_to_CARET import prepare_data_CSV_to_CARET
 from .prepare_data_CSV_to_AUTOML import prepare_data_CSV_to_AUTOML
 from .convert_rainfall import convert_rainfall
+from .preprocess_ECMWF_nc import preprocess_ECMWF_nc 

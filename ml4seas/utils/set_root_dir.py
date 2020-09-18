@@ -17,7 +17,9 @@ def set_root_dir(root='local'):
     elif root == 'gdata': 
         root_dir = pathlib.Path('/media/nicolasf/GDATA/END19101/Working/data/')
     elif root == 'network': 
-        root_dir = pathlib.Path.home() / 'drives' / 'auck_projects' / 'END19101' / 'Working' / 'data'
+        root_dir = pathlib.Path.home() / 'drives' / 'ham_projects' / 'END19101' / 'Working' / 'data'
+    elif root == 'ssd': 
+        root_dir = pathlib.Path('/media/nicolasf/END19101/data/')
     else: 
-        print("invalid value for `root`, needs to be ['local','gdata','network']")
+        print("invalid value for `root`, needs to be ['local','gdata','network','ssd]")
     return root_dir

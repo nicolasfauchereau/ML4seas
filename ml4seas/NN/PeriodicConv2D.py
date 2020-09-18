@@ -5,6 +5,21 @@ class PeriodicConv2D(tf.keras.layers.Layer):
                  kernel_size,
                  conv_kwargs={},
                  **kwargs, ):
+        """
+        __init__ PeriodicConv2D
+
+        Custom layer to create a periodic 
+        padding along the longitudes
+
+        Parameters
+        ----------
+        filters : filters
+            the number of filters
+        kernel_size : [type]
+            [description]
+        conv_kwargs : dict, optional
+            [description], by default {}
+        """
         super().__init__(**kwargs)
         self.filters = filters
         self.kernel_size = kernel_size

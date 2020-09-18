@@ -43,8 +43,19 @@ class XrDataGenerator(keras.utils.Sequence):
         self.batch_size = batch_size
         self.shuffle = shuffle
 
+        # sanity checks 
+        rename_dic = {'time':'instance','latitude':'lat','longitude':'lon'}
+
+        for k in rename_dic.keys(): 
+            try:
+                self.Xds = self.Xds.rename({k:rename_dic[k]})
+                self.Yds = self.Yds.rename({k:rename_dic[k]})
+            except:
+                pass
+
         # build X data 
         Xdata = []
+        
         generic_level = xr.DataArray([1], coords={'level': [1]}, dims=['level'])
         
         for var, levels in X_var_dict.items():

@@ -1,4 +1,4 @@
-def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', replace_step=True, drop_orig=True, clip=True): 
+def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', time_var='time', drop_orig=True, clip=True): 
     """
     Converts rainfall that is in m.s**-1 (m/s) to mm in the CDS forecasts 
     
@@ -7,12 +7,13 @@ def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', repl
     
     dset : the xarray Dataset 
     varin : str, the name of the original variable ('tprate' is default)
-    varout : str, the name of the variable after conversion ('rain' is default)
+    varout : str, the name of the variable after conversion ('precip' is default)
     out_units : str, the units after conversion, will be added to the attrs dict 
                 of `varout`, mm is default
-    replace_step: Boolean, whether to replace the `step` variable by a integer list
-                  default is True 
-    drop_orig : Boolearn, whether to drop the original variable (`varin`)
+    time_var : str, the name of the time (init_time) variable, default 'time'
+    drop_orig : Boolean, whether to drop the original variable (`varin`)
+                default is True 
+    clip : Boolean, whether or not to clip the results at 0
                 default is True 
     
     Return
@@ -24,6 +25,9 @@ def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', repl
 
     # imports
     import pandas as pd
+    from datetime import datetime
+    from dateutil.relativedelta import relativedelta
+    from calendar import monthrange
     
     # check that the rainfall is indeed in m.s-1
     in_units = dset[varin].attrs['units']
@@ -39,21 +43,29 @@ def convert_rainfall(dset, varin='tprate', varout='precip', out_units='mm', repl
         dset[varout] = (dset[varin] * 1000 * (24 * 60 * 60))
         
         # calculate the number of days per month, then multiply 
-        init_date = pd.to_datetime(dset.time.data)
+        init_dates = pd.to_datetime(dset[time_var].data).to_pydatetime()
         
-        dset['forecast_horizon'] = (('step'), [init_date + (x-1) for x in dset.step.data])
+        steps = dset.step.data
         
-        dset['ndays'] = (('step'), [pd.to_datetime(x).day for x in dset['forecast_horizon'].data])      
+        ndays = []
+
+        for date in init_dates: 
+            n = [date + relativedelta(months=x) for x in steps]
+            n = [monthrange(x.year, x.month)[1] for x in n]
+            ndays.append(n)
+        
+        ndays = np.array(ndays)
+        
+        dset['ndays'] = ((time_var,'step'), ndays) 
         
         dset[varout] = dset[varout] * dset['ndays']
+        dset[varout].attrs['units'] = 'mm'
 
         # clip 
         if clip: 
             dset[varout] = dset[varout].clip(min=0.0)
-        
-        if replace_step: 
-            dset['step'] = (('step'), list(range(1, len(dset['step'].data) + 1)))
-        
+            
+        # drop the original variable 
         if drop_orig:
             dset = dset.drop_vars(varin)
         

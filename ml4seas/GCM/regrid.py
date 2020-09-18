@@ -5,7 +5,9 @@ package_name = 'xesmf'
 spec = importlib.util.find_spec(package_name)
 
 if spec is None:
+
     print(package_name +" is not installed, using method `interp_like` for interpolation")
+
     def regrid(ds_in, target_ds):
         """
         regrid utility using the `interp_like` method of
@@ -25,8 +27,11 @@ if spec is None:
         """
         ds_out = ds_in.interp_like(target_ds)
         return ds_out
+        
 else: 
+
     print("xesmf installed, ")
+
     def regrid(ds_in, target_ds,  method='bilinear'):
         """
         regrid utility using the `Regridder` method of

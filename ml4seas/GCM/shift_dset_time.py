@@ -25,8 +25,8 @@ def shift_dset_time(dset, name='time', step=3, end_month = True):
             but the time variable does NOT start at the beinning of the month
             """)
         else: 
-            dset[name] = dset.time.to_index().shift(periods = step + 1, freq='M')
+            dset[name] = dset[name].to_index().shift(periods = step + 1, freq='M')
     else: 
-        dset[name] = dset.time.to_index().shift(periods = step, freq='MS')
+        dset[name] = dset[name].to_index().shift(periods = step, freq='MS')
     
     return dset 

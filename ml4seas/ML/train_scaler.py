@@ -3,6 +3,9 @@ def train_scaler(dset, varname=None, row_dim='time', transform=True):
     Train a Standard Scaler on a Dataset along the time dimension 
     and return the Standardised dataset (optionally)
 
+    If dask-ml is present, then try and train a Dask ML StandardScaler, 
+    otherwise reverts to scikit-learn 
+
     Parameters
     ----------
 
