@@ -5,3 +5,4 @@ from .calculate_anomalies import calculate_anomalies
 from .roll_longitudes import roll_longitudes
 from .list_files import list_files
 from .save_by_month import save_by_month
+from .stagger import stagger
