@@ -32,9 +32,13 @@ def calculate_IOD(dset, dim='init'):
 
     return IOD 
 
-def calculate_SPSD(dset, dim='init', var_name='sst'): 
+def calculate_SPSD(dset, dim='init', var_name='sst', ensmean=True): 
 
     from scipy.stats import zscore
+
+    if ensmean and 'member' in dset.dims: 
+
+        dset = dset.mean('member')
 
     NW_pole = dset.sel(lat=slice(-50.,-35), lon=slice(170.,190.)).mean('lat').mean('lon')
     
@@ -44,22 +48,19 @@ def calculate_SPSD(dset, dim='init', var_name='sst'):
 
     SE_pole = SE_pole.to_dataframe()[[var_name]]
 
-    NW_pole = NW_pole.mean('member')
+    NW_pole = NW_pole.unstack()
 
-    SE_pole = SE_pole.mean('member')
+    SE_pole = SE_pole.unstack() 
 
-    NW_pole = NW_pole.to_dataframe()[[var_name]]
-    SE_pole = SE_pole.to_dataframe()[[var_name]]
+    NW_pole = NW_pole.apply(zscore)
 
-    df = pd.concat((NW_pole, SE_pole), axis=1)
+    SE_pole = SE_pole.apply(zscore) 
 
-    df = df.apply(zscore)
+    spsd = NW_pole - SE_pole
 
-    spsd = df.iloc[:,0] - df.iloc[:,1]
+    spsd.columns = pd.MultiIndex.from_product([['SPSD'], range(spsd.shape[1])])
 
-    spsd = spsd.unstack() 
-
-    spsd.columns = pd.MultiIndex.from_product([[SPSD], range(spsd.shape[1])])
+    return spsd
 
 def calculate_SAM(dset, var_name='msl'): 
     
