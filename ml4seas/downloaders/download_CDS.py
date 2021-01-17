@@ -119,7 +119,7 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
         
         if fname_out.exists():
             
-            print(f"{str(fname_out)} exists already on disk, skipping download") 
+            print(f"\n{str(fname_out)} exists already on disk, skipping download and returning path\n") 
 
             return fname_out
 
@@ -131,7 +131,7 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
             
                 try: 
 
-                    print(f"attempting to download {varname} for GCM {GCM}, for level {level}, year {year}, month {month}, in {file_format}\n")
+                    print(f"\nattempting to download {varname} for GCM {GCM}, for level {level}, year {year}, month {month}, in {file_format}\n")
                     
                     c = cdsapi.Client()
 
@@ -154,13 +154,13 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
                     
                         data.delete()
 
-                        print(f"{fname_out} downloaded OK")
+                        print(f"\n{fname_out} downloaded OK\n")
 
                         return fname_out
 
                 except: 
                     
-                    print(f"failure to download or save {str(fname_out)}")
+                    print(f"\nfailure to download or save {str(fname_out)}\n")
         
     else: 
         
@@ -170,7 +170,7 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
         
         if fname_out.exists():
 
-            print(f"{str(fname_out)} exists already on disk, skipping download") 
+            print(f"\n{str(fname_out)} exists already on disk, skipping download and returning path\n") 
 
             return fname_out
 
@@ -182,7 +182,7 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
                         
                 try: 
                     
-                    print(f"attempting to download {varname} for GCM {GCM}, for level {level}, year {year}, month {month}, in {file_format}\n")
+                    print(f"\nattempting to download {varname} for GCM {GCM}, for level {level}, year {year}, month {month}, in {file_format}\n")
 
                     c = cdsapi.Client()
 
@@ -206,10 +206,10 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
                     
                         data.delete()
 
-                        print(f"{fname_out} downloaded OK")
+                        print(f"\n{fname_out} downloaded OK\n")
 
                         return fname_out
 
                 except: 
 
-                    print(f"failure to download or save {str(fname_out)}") 
+                    print(f"\nfailure to download or save {str(fname_out)}\n") 
