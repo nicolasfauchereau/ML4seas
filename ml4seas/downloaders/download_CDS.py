@@ -28,13 +28,16 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
     import pathlib
     from datetime import datetime
     import cdsapi
+    from collections import OrderedDict
     # ------------------------------- 
     
     # defines a dictionnary that maps variable name 
 
+    dvar = OrderedDict()
+
     if level == 'surface': 
 
-        dvar = {}
+        dvar = OrderedDict()
 
         # `raw` values, single levels 
         dvar['t2m'] = ['seasonal-monthly-single-levels', '2m_temperature']
@@ -58,7 +61,7 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
 
     else:
         
-        dvar = {}
+        dvar = OrderedDict()
         
         # `raw` values, pressure levels 
         dvar['geopotential'] = ['seasonal-monthly-pressure-levels', 'geopotential']
