@@ -17,7 +17,11 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
     opath : string or pathlib.Path, optional
         The path were to save the forecast files (grib), by default None
     domain : list, optional
-        The geographical domain [latN, lonW, latS, lonE], by default [20, 120, -50, 180]
+        The geographical domain. WARNING !: must be [latN, lonW, latS, lonE], by default [20, 120, -50, 180]
+    file_format : string, by default 'grib'
+        The file format the file will be downloaded into
+    level: str or int, default 'surface'
+        The level, either 'surface' (a string) or an int in [950, 500, 200] or appropriate level
     """
     
     # imports -----------------------
@@ -53,7 +57,9 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
         dvar['solar radiation anomaly'] = ['seasonal-postprocessed-single-levels', 'surface_solar_radiation_anomalous_rate_of_accumulation']
 
     else:
-
+        
+        dvar = {}
+        
         # `raw` values, pressure levels 
         dvar['geopotential'] = ['seasonal-monthly-pressure-levels', 'geopotential']
         dvar['temperature'] = ['seasonal-monthly-pressure-levels', 'temperature']
@@ -73,21 +79,30 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
     if year is None and month is None: 
         
         year = datetime.utcnow().year
+
         month = datetime.utcnow().month
     
-    # if the output path is not define, will create folders 
-    # corresponding to the GCM in the current directory 
+    # if the output path is not defined, will create a folder
+    # corresponding to the GCM in the CURRENT directory 
+    
     if opath is None: 
+        
         opath = pathlib.Path.cwd()
+        
+        opath = opath.joinpath(GCM)
+
     else:
+
+    # if opath is defined, but is a string, we cast into pathlib.Path
+        
         if not(isinstance(opath, pathlib.Path)): 
+            
             opath = pathlib.Path(opath)
     
-    opath_centre = opath.joinpath(GCM) 
-
-    if not(opath_centre.exists()):
+    # creates the path if not existing on disk
+    if not(opath.exists()):
         
-        opath_centre.mkdir(parents=True)
+        opath.mkdir(parents=True)
 
     # build the filename for output 
 
@@ -95,67 +110,103 @@ def download_CDS(GCM='ECMWF', varname='t2m', year=None, month=None, leadtimes=[1
 
         # if surface level
 
-        fname_out = opath_centre.joinpath(f"ensemble_{varname.replace(' ','_')}_seas_forecasts_from_{year}_{month}_{GCM}.{file_format}")
-    
-        # connect to the CDS and retrieve file ... 
+        fname_out = opath.joinpath(f"ensemble_seas_forecasts_{varname.replace(' ','_')}_from_{year}_{month}_{GCM}.{file_format}")
+
+        # if the filename has already been downloaded, skip and return the path 
         
-        try: 
+        if fname_out.exists():
             
-            c = cdsapi.Client()
+            print(f"{str(fname_out)} exists already on disk, skipping download") 
 
-            data = c.retrieve(
-            dvar[varname][0],
-            {
-                'format':file_format,
-                'originating_centre':GCM.lower(),
-                'variable':dvar[varname][1],
-                'product_type':'monthly_mean',
-                'year':str(year),
-                'month':str(month).zfill(2),
-                'leadtime_month': list(map(str, [x+1 for x in leadtimes])), 
-                'area': domain,
-            },
-            fname_out)
+            return fname_out
 
-        except: 
+        # else, connect to the CDS and retrieve file ...
+        
+        else: 
             
-            pass 
-    
+            while not(fname_out.exists()): 
+            
+                try: 
+
+                    print(f"attempting to download {varname} for GCM {GCM}, for level {level}, year {year}, month {month}, in {file_format}\n")
+                    
+                    c = cdsapi.Client()
+
+                    data = c.retrieve(
+                    
+                    dvar[varname][0],
+                    {
+                        'format':file_format,
+                        'originating_centre':GCM.lower(),
+                        'variable':dvar[varname][1],
+                        'product_type':'monthly_mean',
+                        'year':str(year),
+                        'month':str(month).zfill(2),
+                        'leadtime_month': list(map(str, [x+1 for x in leadtimes])), 
+                        'area': domain,
+                    },
+                    fname_out)
+
+                    if fname_out.exists(): 
+                    
+                        data.delete()
+
+                        print(f"{fname_out} downloaded OK")
+
+                        return fname_out
+
+                except: 
+                    
+                    print(f"failure to download or save {str(fname_out)}")
+        
     else: 
         
-        fname_out = opath_centre.joinpath(f"ensemble_{varname.replace(' ','_')}_Z{str(level)}_seas_forecasts_from_{year}_{month}_{GCM}.{file_format}")
+        fname_out = opath.joinpath(f"ensemble_seas_forecasts_{varname.replace(' ','_')}_Z{str(level)}_from_{year}_{month}_{GCM}.{file_format}")
 
-        # now connect to the CDS and retrieve file ... 
-        try: 
-            
-            c = cdsapi.Client()
-
-            data = c.retrieve(
-            dvar[varname][0],
-            {
-                'format':file_format,
-                'originating_centre':GCM.lower(),
-                'variable':dvar[varname][1],
-                'pressure_level': str(level)
-                'product_type':'monthly_mean',
-                'year':str(year),
-                'month':str(month).zfill(2),
-                'leadtime_month': list(map(str, [x+1 for x in leadtimes])), 
-                'area': domain,
-            },
-            fname_out)
-
-        except: 
-            
-            pass 
-
-    # if the filename has been successfully downloaded, delete the request 
-    # on the CDS server ... 
-    if fname_out.exists(): 
+        # if the filename has already been downloaded, skip, and return the path 
         
-        data.delete()
-        print(f"{fname_out} downloaded OK")
-        return fname_out
-    else:
-        print(f"failure to download or save {str(fname_out)}")
-        return None
+        if fname_out.exists():
+
+            print(f"{str(fname_out)} exists already on disk, skipping download") 
+
+            return fname_out
+
+        # else, connect to the CDS and try retrieve file ...
+        
+        else: 
+            
+            while not(fname_out.exists()):
+                        
+                try: 
+                    
+                    print(f"attempting to download {varname} for GCM {GCM}, for level {level}, year {year}, month {month}, in {file_format}\n")
+
+                    c = cdsapi.Client()
+
+                    data = c.retrieve(
+                    
+                    dvar[varname][0],
+                    {
+                        'format':file_format,
+                        'originating_centre':GCM.lower(),
+                        'variable':dvar[varname][1],
+                        'pressure_level': str(level), 
+                        'product_type':'monthly_mean',
+                        'year':str(year),
+                        'month':str(month).zfill(2),
+                        'leadtime_month': list(map(str, [x+1 for x in leadtimes])), 
+                        'area': domain,
+                    },
+                    fname_out)
+
+                    if fname_out.exists():
+                    
+                        data.delete()
+
+                        print(f"{fname_out} downloaded OK")
+
+                        return fname_out
+
+                except: 
+
+                    print(f"failure to download or save {str(fname_out)}") 
